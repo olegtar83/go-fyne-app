@@ -3,70 +3,71 @@ package main
 import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
-	"github.com/streadway/amqp"
-	"encoding/json"
-	"log" )
+	"fyne.io/fyne/v2/widget" 
+	"giveout-emulator/rabbit"
+	"giveout-emulator/models"
+)
 
 func main() {
 	a := app.New()
-	w := a.NewWindow("Send RabbitMq")
+	w := a.NewWindow("Send to Queue")
 
-	hello := widget.NewLabel("Send to RabbitMQ!")
-	w.SetContent(container.NewVBox(
-		hello,
-		widget.NewButton("Send!", func() {
-			log.Printf("hi")
-			conn, err := amqp.Dial("amqp://giveout:giveout123@localhost:5672/")
-			failOnError(err, "Failed to connect to RabbitMQ")
-			defer conn.Close()
-		
-			ch, err := conn.Channel()
-			failOnError(err, "Failed to open a channel")
-			defer ch.Close()
-		
-			err = ch.ExchangeDeclare(
-				"giveoutExchange",   // name
-				"fanout", // type
-				true,     // durable
-				false,    // auto-deleted
-				false,    // internal
-				false,    // no-wait
-				nil,      // arguments
-			  )
+	hello1 := widget.NewLabel("Send to RabbitMQ!")
+	button1 := widget.NewButton("000000000000056223", func() {
+		pass:= &models.PassModel{
+			CardType: "3",
+			PassCode:"000000000000056223",
+			Serial:"5506",
+			Workstation:"wpet-w10-p00320",
+		}
+		rabbit.PublishMessage(pass)
+		hello1.SetText("Sent: " + pass.PassCode)
+	})
+	button2 := 	widget.NewButton("000000000000141136", func() {
+		pass:= &models.PassModel{
+			CardType: "3",
+			PassCode:"000000000000141136",
+			Serial:"5506",
+			Workstation:"wpet-w10-p00320",
+		}
+		rabbit.PublishMessage(pass)
+		hello1.SetText("Sent: " + pass.PassCode)
+	})
+	button3 := 	widget.NewButton("000000000014655060", func() {
+		pass:= &models.PassModel{
+			CardType: "3",
+			PassCode:"000000000014655060",
+			Serial:"5506",
+			Workstation:"wpet-w10-p00320",
+		}
+		rabbit.PublishMessage(pass)
+		hello1.SetText("Sent: " + pass.PassCode)
+	})
+	button4 := widget.NewButton("36096178920526596", func() {
+		pass:= &models.PassModel{
+			CardType: "3",
+			PassCode:"36096178920526596",
+			Serial:"5506",
+			Workstation:"wpet-w10-p00320",
+		}
+		rabbit.PublishMessage(pass)
+		hello1.SetText("Sent: " + pass.PassCode)
+	})
+	button5 := 	widget.NewButton("00000000000132697", func() {
+		pass:= &models.PassModel{
+			CardType: "3",
+			PassCode:"00000000000132697",
+			Serial:"5506",
+			Workstation:"wpet-w10-p00320",
+		}
+		rabbit.PublishMessage(pass)
+		hello1.SetText("Sent: " + pass.PassCode)
+	})
+	contentTab1 := container.NewVBox(hello1, button1, button2, button3, button4, button5)
 
-			pass:= &PassModel{
-				CardType: "3",
-				PassCode:"36096178920526596",
-				Serial:"5506",
-				Workstation:"wpet-w10-p00320",
-			}
-			data, _ := json.Marshal(pass)
-			body := string(data)
-	
-			err = ch.Publish(
-			"giveoutExchange", // exchange
-			"",     // routing key
-			false,  // mandatory
-			false,  // immediate
-			amqp.Publishing{
-					ContentType: "text/plain",
-					Body:        []byte(body),
-			})
-			hello.SetText("Sent :)")
-		}),
+	w.SetContent(container.NewAppTabs(
+		container.NewTabItem("RabbitMq", contentTab1 ),
+		container.NewTabItem("Azure Service Bus", widget.NewLabel("Will be implemented.")),
 	))
-
 	w.ShowAndRun()
 }
-func failOnError(err error, msg string) {
-	if err != nil {
-	  log.Fatalf("%s: %s", msg, err)
-	}
-  }
-  type PassModel struct {
-	CardType string
-	PassCode string
-	Serial string
-	Workstation string
-  }

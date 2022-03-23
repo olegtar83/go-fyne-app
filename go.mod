@@ -1,4 +1,4 @@
-module github.com/USERNAME/simple-go-service
+module giveout-emulator
 
 go 1.16
 
